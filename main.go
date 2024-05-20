@@ -1,9 +1,12 @@
 package main
 
-import "net"
+import (
+	"net"
+	"os"
+)
 
 func main() {
-	con, err := net.Dial("tcp4", "klf200.mti-team2.dyndns.org:51200")
+	con, err := net.Dial("tcp4", os.Getenv("KLF200_ADDRESS"))
 	if err != nil {
 		panic(err)
 	}
