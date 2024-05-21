@@ -15,6 +15,10 @@ func (req *PasswordEnterReq) Code() transport.Command {
 	return GW_PASSWORD_ENTER_REQ
 }
 
+func (req *PasswordEnterReq) NewConfirm() Confirm {
+	return &PasswordEnterCfm{}
+}
+
 func (req *PasswordEnterReq) Write() ([]byte, error) {
 	array := []byte(req.Password)
 	if len(array) > 32 {
@@ -32,7 +36,7 @@ func (req *PasswordEnterReq) Write() ([]byte, error) {
 }
 
 type PasswordEnterCfm struct {
-	Status bool
+	Success bool
 }
 
 var _ Confirm = (*PasswordEnterCfm)(nil)
@@ -48,9 +52,9 @@ func (cfm *PasswordEnterCfm) Read(data []byte) error {
 
 	switch data[0] {
 	case 0:
-		cfm.Status = false
+		cfm.Success = true
 	case 1:
-		cfm.Status = true
+		cfm.Success = false
 	default:
 		return fmt.Errorf("bad status")
 	}

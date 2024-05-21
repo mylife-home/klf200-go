@@ -63,6 +63,8 @@ func main() {
 
 		fmt.Printf("READ %d\n", n)
 
+		// dumpByteSlice(buff[0:n])
+
 		err = decoder.AddRaw(buff[0:n])
 		if err != nil {
 			panic(err)
@@ -82,7 +84,7 @@ func main() {
 			cfm := &commands.PasswordEnterCfm{}
 			if frame.Cmd == cfm.Code() {
 				cfm.Read(frame.Data)
-				fmt.Printf("cfm status %t\n", cfm.Status)
+				fmt.Printf("cfm success %t\n", cfm.Success)
 			} else {
 				fmt.Printf("frame %d\n", frame.Cmd)
 			}

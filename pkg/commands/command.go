@@ -8,6 +8,7 @@ type Command interface {
 
 type Request interface {
 	Command
+	NewConfirm() Confirm
 	Write() ([]byte, error)
 }
 
@@ -19,6 +20,22 @@ type Confirm interface {
 type Notify interface {
 	Command
 	Read(data []byte) error
+}
+
+var notifyRegistry = make(map[transport.Command]func() Notify)
+
+func registerNotify(builder func() Notify) {
+	code := builder().Code()
+	notifyRegistry[code] = builder
+}
+
+func GetNotify(code transport.Command) Notify {
+	builder, ok := notifyRegistry[code]
+	if !ok {
+		return nil
+	}
+
+	return builder()
 }
 
 // Provides information on what triggered the error.
