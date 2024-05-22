@@ -38,6 +38,8 @@ func GetNotify(code transport.Command) Notify {
 	return builder()
 }
 
+var emptyData = make([]byte, 0)
+
 // Provides information on what triggered the error.
 const GW_ERROR_NTF transport.Command = 0x0000
 
