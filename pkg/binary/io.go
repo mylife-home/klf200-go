@@ -1,4 +1,4 @@
-package transport
+package binary
 
 import (
 	"bytes"
@@ -32,13 +32,13 @@ type BinaryReader interface {
 	ReadI64() (int64, error)
 }
 
-func makeBinaryWriter(buffer *bytes.Buffer) BinaryWriter {
+func MakeBinaryWriter(buffer *bytes.Buffer) BinaryWriter {
 	return &binaryWriter{
 		buffer: buffer,
 	}
 }
 
-func makeBinaryReader(buffer *bytes.Buffer) BinaryReader {
+func MakeBinaryReader(buffer *bytes.Buffer) BinaryReader {
 	return &binaryReader{
 		buffer: buffer,
 	}

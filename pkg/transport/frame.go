@@ -3,6 +3,7 @@ package transport
 import (
 	"bytes"
 	"fmt"
+	"klf200/pkg/binary"
 )
 
 type Command uint16
@@ -16,7 +17,7 @@ type Frame struct {
 
 func (frame *Frame) Write() *bytes.Buffer {
 	buff := &bytes.Buffer{}
-	writer := makeBinaryWriter(buff)
+	writer := binary.MakeBinaryWriter(buff)
 
 	len := len(frame.Data)
 	if len > 250 {
@@ -35,7 +36,7 @@ func (frame *Frame) Write() *bytes.Buffer {
 }
 
 func FrameRead(buff *bytes.Buffer) (*Frame, error) {
-	reader := makeBinaryReader(buff)
+	reader := binary.MakeBinaryReader(buff)
 	raw := buff.Bytes()
 	frame := &Frame{}
 
