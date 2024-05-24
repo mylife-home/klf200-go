@@ -3,7 +3,7 @@ package commands
 import (
 	"bytes"
 	"fmt"
-	"klf200/pkg/transport"
+	"klf200/transport"
 )
 
 type PasswordChangeReq struct {

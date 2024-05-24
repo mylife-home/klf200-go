@@ -2,7 +2,7 @@ package commands
 
 import (
 	"fmt"
-	"klf200/pkg/transport"
+	"klf200/transport"
 )
 
 type LeaveLearnStateReq struct {

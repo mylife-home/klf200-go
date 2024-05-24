@@ -3,8 +3,8 @@ package commands
 import (
 	"bytes"
 	"fmt"
-	"klf200/pkg/binary"
-	"klf200/pkg/transport"
+	"klf200/binary"
+	"klf200/transport"
 )
 
 type GetStateReq struct {

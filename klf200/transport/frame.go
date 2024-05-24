@@ -3,7 +3,7 @@ package transport
 import (
 	"bytes"
 	"fmt"
-	"klf200/pkg/binary"
+	"klf200/binary"
 )
 
 type Command uint16

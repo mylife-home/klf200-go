@@ -1,6 +1,6 @@
 package commands
 
-import "klf200/pkg/transport"
+import "klf200/transport"
 
 type Command interface {
 	Code() transport.Command
