@@ -310,7 +310,7 @@ func (client *Client) ChangePassword(newPassword string) error {
 	return nil
 }
 
-func (client *Client) Version() (*commands.GetVersionCfm, error) {
+func (client *Client) GetVersion() (*commands.GetVersionCfm, error) {
 	req := &commands.GetVersionReq{}
 	cfm, err := client.execute(req)
 	if err != nil {
@@ -320,7 +320,7 @@ func (client *Client) Version() (*commands.GetVersionCfm, error) {
 	return cfm.(*commands.GetVersionCfm), nil
 }
 
-func (client *Client) ProtocolVersion() (*commands.GetProtocolVersionCfm, error) {
+func (client *Client) GetProtocolVersion() (*commands.GetProtocolVersionCfm, error) {
 	req := &commands.GetProtocolVersionReq{}
 	cfm, err := client.execute(req)
 	if err != nil {
@@ -330,7 +330,7 @@ func (client *Client) ProtocolVersion() (*commands.GetProtocolVersionCfm, error)
 	return cfm.(*commands.GetProtocolVersionCfm), nil
 }
 
-func (client *Client) State() (*commands.GetStateCfm, error) {
+func (client *Client) GetState() (*commands.GetStateCfm, error) {
 	req := &commands.GetStateReq{}
 	cfm, err := client.execute(req)
 	if err != nil {
@@ -352,4 +352,69 @@ func (client *Client) LeaveLearnState() error {
 	}
 
 	return nil
+}
+
+func (client *Client) SetUtc(timestamp time.Time) error {
+	req := &commands.SetUtcReq{Timestamp: timestamp}
+	_, err := client.execute(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (client *Client) SetTimeZone(tzstr string) error {
+	// TODO: help create tzstr
+	req := &commands.RtcSetTimeZoneReq{TimeZoneString: tzstr}
+	cfm, err := client.execute(req)
+	if err != nil {
+		return err
+	}
+
+	if !cfm.(*commands.RtcSetTimeZoneCfm).Success {
+		return errors.New("the request failed")
+	}
+
+	return nil
+}
+
+func (client *Client) GetLocalTime() (*commands.GetLocalTimeCfm, error) {
+	req := &commands.GetLocalTimeReq{}
+	cfm, err := client.execute(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfm.(*commands.GetLocalTimeCfm), nil
+}
+
+func (client *Client) Reboot() error {
+	req := &commands.RebootReq{}
+	_, err := client.execute(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (client *Client) SetFactoryDefault() error {
+	req := &commands.SetFactoryDefaultReq{}
+	_, err := client.execute(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (client *Client) GetNetworkSetup() (*commands.GetNetworkSetupCfm, error) {
+	req := &commands.GetNetworkSetupReq{}
+	cfm, err := client.execute(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfm.(*commands.GetNetworkSetupCfm), nil
 }

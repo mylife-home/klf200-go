@@ -34,7 +34,7 @@ func notify(n commands.Notify) {
 }
 
 func open(client *klf200.Client) {
-	ver, err := client.Version()
+	ver, err := client.GetVersion()
 	if err != nil {
 		panic(err)
 	}
@@ -49,13 +49,42 @@ func open(client *klf200.Client) {
 	fmt.Printf("ProductGroup = %d\n", ver.ProductGroup)
 	fmt.Printf("ProductType = %d\n", ver.ProductType)
 
-	state, err := client.State()
+	state, err := client.GetState()
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("GatewayState = %d\n", state.GatewayState)
 	fmt.Printf("SubState = %d\n", state.SubState)
+
+	// client.SetUtc(time.Now())
+	// TODO: set time zone
+
+	time, err := client.GetLocalTime()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("UtcTime = %v\n", time.UtcTime)
+	fmt.Printf("Second = %d\n", time.LocalTime.Second)
+	fmt.Printf("Minute = %d\n", time.LocalTime.Minute)
+	fmt.Printf("Hour = %d\n", time.LocalTime.Hour)
+	fmt.Printf("DayOfMonth = %d\n", time.LocalTime.DayOfMonth)
+	fmt.Printf("Month = %d\n", time.LocalTime.Month)
+	fmt.Printf("Year = %d\n", time.LocalTime.Year)
+	fmt.Printf("WeekDay = %d\n", time.LocalTime.WeekDay)
+	fmt.Printf("DayOfYear = %d\n", time.LocalTime.DayOfYear)
+	fmt.Printf("DaylightSavingFlag = %d\n", time.LocalTime.DaylightSavingFlag)
+
+	net, err := client.GetNetworkSetup()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("DHCP = %t\n", net.DHCP)
+	fmt.Printf("IpAddress = %v\n", net.IpAddress)
+	fmt.Printf("Mask = %v\n", net.Mask)
+	fmt.Printf("DefGW = %v\n", net.DefGW)
 }
 
 func dumpByteSlice(b []byte) {
