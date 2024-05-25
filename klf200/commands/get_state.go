@@ -13,7 +13,7 @@ type GetStateReq struct {
 var _ Request = (*GetStateReq)(nil)
 
 func (req *GetStateReq) Code() transport.Command {
-	return GW_GET_STATE_REQ
+	return transport.GW_GET_STATE_REQ
 }
 
 func (req *GetStateReq) NewConfirm() Confirm {
@@ -76,7 +76,7 @@ type GetStateCfm struct {
 var _ Confirm = (*GetStateCfm)(nil)
 
 func (cfm *GetStateCfm) Code() transport.Command {
-	return GW_GET_STATE_CFM
+	return transport.GW_GET_STATE_CFM
 }
 
 func (cfm *GetStateCfm) Read(data []byte) error {

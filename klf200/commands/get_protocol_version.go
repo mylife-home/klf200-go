@@ -13,7 +13,7 @@ type GetProtocolVersionReq struct {
 var _ Request = (*GetProtocolVersionReq)(nil)
 
 func (req *GetProtocolVersionReq) Code() transport.Command {
-	return GW_GET_PROTOCOL_VERSION_REQ
+	return transport.GW_GET_PROTOCOL_VERSION_REQ
 }
 
 func (req *GetProtocolVersionReq) NewConfirm() Confirm {
@@ -32,7 +32,7 @@ type GetProtocolVersionCfm struct {
 var _ Confirm = (*GetProtocolVersionCfm)(nil)
 
 func (cfm *GetProtocolVersionCfm) Code() transport.Command {
-	return GW_GET_PROTOCOL_VERSION_CFM
+	return transport.GW_GET_PROTOCOL_VERSION_CFM
 }
 
 func (cfm *GetProtocolVersionCfm) Read(data []byte) error {

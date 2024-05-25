@@ -13,7 +13,7 @@ type GetVersionReq struct {
 var _ Request = (*GetVersionReq)(nil)
 
 func (req *GetVersionReq) Code() transport.Command {
-	return GW_GET_VERSION_REQ
+	return transport.GW_GET_VERSION_REQ
 }
 
 func (req *GetVersionReq) NewConfirm() Confirm {
@@ -43,7 +43,7 @@ type SoftWareVersionData struct {
 var _ Confirm = (*GetVersionCfm)(nil)
 
 func (cfm *GetVersionCfm) Code() transport.Command {
-	return GW_GET_VERSION_CFM
+	return transport.GW_GET_VERSION_CFM
 }
 
 func (cfm *GetVersionCfm) Read(data []byte) error {

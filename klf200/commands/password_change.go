@@ -13,7 +13,7 @@ type PasswordChangeReq struct {
 var _ Request = (*PasswordChangeReq)(nil)
 
 func (req *PasswordChangeReq) Code() transport.Command {
-	return GW_PASSWORD_CHANGE_REQ
+	return transport.GW_PASSWORD_CHANGE_REQ
 }
 
 func (req *PasswordChangeReq) NewConfirm() Confirm {
@@ -43,7 +43,7 @@ type PasswordChangeCfm struct {
 var _ Confirm = (*PasswordChangeCfm)(nil)
 
 func (cfm *PasswordChangeCfm) Code() transport.Command {
-	return GW_PASSWORD_CHANGE_CFM
+	return transport.GW_PASSWORD_CHANGE_CFM
 }
 
 func (cfm *PasswordChangeCfm) Read(data []byte) error {
@@ -73,7 +73,7 @@ func init() {
 }
 
 func (ntf *PasswordChangeNtf) Code() transport.Command {
-	return GW_PASSWORD_CHANGE_NTF
+	return transport.GW_PASSWORD_CHANGE_NTF
 }
 
 func (ntf *PasswordChangeNtf) Read(data []byte) error {

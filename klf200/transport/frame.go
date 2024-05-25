@@ -6,8 +6,6 @@ import (
 	"klf200/binary"
 )
 
-type Command uint16
-
 const protocolId uint8 = 0
 
 type Frame struct {

@@ -83,13 +83,13 @@ func (conn *connection) processRead(data []byte) {
 			return
 		}
 
-		log.Printf("Recv frame %d", frame.Cmd)
+		log.Printf("Recv frame %v", frame)
 		conn.read <- frame
 	}
 }
 
 func (conn *connection) processWrite(frame *transport.Frame) {
-	log.Printf("Send frame %d", frame.Cmd)
+	log.Printf("Send frame %v", frame)
 
 	buffer := transport.SlipEncode(frame.Write())
 	conn.sock.Write(buffer.Bytes())

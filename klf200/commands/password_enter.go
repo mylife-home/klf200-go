@@ -12,7 +12,7 @@ type PasswordEnterReq struct {
 var _ Request = (*PasswordEnterReq)(nil)
 
 func (req *PasswordEnterReq) Code() transport.Command {
-	return GW_PASSWORD_ENTER_REQ
+	return transport.GW_PASSWORD_ENTER_REQ
 }
 
 func (req *PasswordEnterReq) NewConfirm() Confirm {
@@ -42,7 +42,7 @@ type PasswordEnterCfm struct {
 var _ Confirm = (*PasswordEnterCfm)(nil)
 
 func (cfm *PasswordEnterCfm) Code() transport.Command {
-	return GW_PASSWORD_ENTER_CFM
+	return transport.GW_PASSWORD_ENTER_CFM
 }
 
 func (cfm *PasswordEnterCfm) Read(data []byte) error {

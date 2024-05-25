@@ -282,8 +282,32 @@ func (pc *pendingConfirm) Wait() (*transport.Frame, error) {
 }
 
 func (client *Client) heartbeat() {
+	/*
+		cmd := &commands.UserActivity{
+			PartitionNumber: &serialization.VarBytes{},
+			Type:            4,
+		}
 
-	// TODO
+		if err := client.executeCommand(cmd); err != nil {
+			log.Printf("Heartbeat error: %s", err)
+		}
+
+		log.Printf("Heartbeat OK")
+	*/
+}
+
+func (client *Client) ChangePassword(newPassword string) error {
+	req := &commands.PasswordChangeReq{Password: newPassword}
+	cfm, err := client.execute(req)
+	if err != nil {
+		return err
+	}
+
+	if !cfm.(*commands.PasswordChangeCfm).Success {
+		return errors.New("the request failed")
+	}
+
+	return nil
 }
 
 func (client *Client) Version() (*commands.GetVersionCfm, error) {
@@ -296,72 +320,36 @@ func (client *Client) Version() (*commands.GetVersionCfm, error) {
 	return cfm.(*commands.GetVersionCfm), nil
 }
 
-/*
-func (client *Client) processCommand(cmd commands.Command) {
-	if client.transactions.ProcessCommand(cmd) {
-		return
+func (client *Client) ProtocolVersion() (*commands.GetProtocolVersionCfm, error) {
+	req := &commands.GetProtocolVersionReq{}
+	cfm, err := client.execute(req)
+	if err != nil {
+		return nil, err
 	}
 
-	// Not matched by transaction manager, consider it notification
-	for _, callback := range client.notificationsCallbacks {
-		go callback(cmd)
-	}
+	return cfm.(*commands.GetProtocolVersionCfm), nil
 }
 
-// send command and expect basic response
-func (client *Client) executeCommand(cmd commands.CommandWithAppSeq) error {
-	_, err := client.execCmdInternal(cmd)
-	return err
+func (client *Client) State() (*commands.GetStateCfm, error) {
+	req := &commands.GetStateReq{}
+	cfm, err := client.execute(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfm.(*commands.GetStateCfm), nil
 }
 
-// send request and expect response
-func (client *Client) executeRequest(req commands.RequestData) (commands.ResponseData, error) {
-	cmd := &commands.Request{
-		ReqCode: req.RequestCode(),
-		ReqData: req,
+func (client *Client) LeaveLearnState() error {
+	req := &commands.LeaveLearnStateReq{}
+	cfm, err := client.execute(req)
+	if err != nil {
+		return err
 	}
 
-	res, err := client.execCmdInternal(cmd)
-
-	var resData commands.ResponseData
-	if err == nil {
-		resData = res.(commands.ResponseData)
+	if !cfm.(*commands.LeaveLearnStateCfm).Success {
+		return errors.New("the request failed")
 	}
 
-	return resData, err
+	return nil
 }
-
-func (client *Client) execCmdInternal(cmd commands.CommandWithAppSeq) (commands.Command, error) {
-	// Note: can be set to nil in the middle
-	conn := client.conn
-	transactions := client.transactions
-
-	if conn == nil || transactions == nil {
-		return nil, fmt.Errorf("not connected")
-	}
-
-	cmd.SetAppSeq(conn.NextAppSeq())
-
-	conn.Write(cmd)
-
-	transaction := makeTransaction(cmd)
-	transactions.addTransaction(transaction)
-	res, err := transaction.Wait()
-	transactions.removeTransaction(transaction)
-
-	return res, err
-}
-
-func (client *Client) heartbeat() {
-	cmd := &commands.UserActivity{
-		PartitionNumber: &serialization.VarBytes{},
-		Type:            4,
-	}
-
-	if err := client.executeCommand(cmd); err != nil {
-		log.Printf("Heartbeat error: %s", err)
-	}
-
-	log.Printf("Heartbeat OK")
-}
-*/

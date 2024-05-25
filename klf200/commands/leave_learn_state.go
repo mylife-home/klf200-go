@@ -11,7 +11,7 @@ type LeaveLearnStateReq struct {
 var _ Request = (*LeaveLearnStateReq)(nil)
 
 func (req *LeaveLearnStateReq) Code() transport.Command {
-	return GW_LEAVE_LEARN_STATE_REQ
+	return transport.GW_LEAVE_LEARN_STATE_REQ
 }
 
 func (req *LeaveLearnStateReq) NewConfirm() Confirm {
@@ -29,7 +29,7 @@ type LeaveLearnStateCfm struct {
 var _ Confirm = (*LeaveLearnStateCfm)(nil)
 
 func (cfm *LeaveLearnStateCfm) Code() transport.Command {
-	return GW_LEAVE_LEARN_STATE_CFM
+	return transport.GW_LEAVE_LEARN_STATE_CFM
 }
 
 func (cfm *LeaveLearnStateCfm) Read(data []byte) error {

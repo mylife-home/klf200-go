@@ -48,6 +48,14 @@ func open(client *klf200.Client) {
 	fmt.Printf("HardwareVersion = %d\n", ver.HardwareVersion)
 	fmt.Printf("ProductGroup = %d\n", ver.ProductGroup)
 	fmt.Printf("ProductType = %d\n", ver.ProductType)
+
+	state, err := client.State()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("GatewayState = %d\n", state.GatewayState)
+	fmt.Printf("SubState = %d\n", state.SubState)
 }
 
 func dumpByteSlice(b []byte) {
