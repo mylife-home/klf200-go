@@ -66,11 +66,12 @@ func MakeClient(servAddr string, password string) *Client {
 		notificationsCallbacks:    make([]func(commands.Notify), 0),
 	}
 
-	client.workerSync.Add(1)
-
-	go client.worker()
-
 	return client
+}
+
+func (client *Client) Start() {
+	client.workerSync.Add(1)
+	go client.worker()
 }
 
 func (client *Client) Close() {

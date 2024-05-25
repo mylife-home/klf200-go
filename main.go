@@ -21,6 +21,8 @@ func main() {
 		}
 	})
 
+	client.Start()
+
 	for {
 	}
 
