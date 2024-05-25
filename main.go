@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"klf200"
 	"klf200/commands"
-	"klf200/transport"
 	"net"
 	"os"
 	"sync"
@@ -36,91 +35,27 @@ func makeConnection(ctx context.Context, address string) (*connection, error) {
 func main() {
 
 	client := klf200.MakeClient(os.Getenv("KLF200_ADDRESS"), os.Getenv("KLF200_PASSWORD"))
-	for {
-	}
-	client.Close()
 
-	conf := &tls.Config{}
-	conf.InsecureSkipVerify = true
+	client.RegisterStatusChange(func(cs klf200.ConnectionStatus) {
+		fmt.Printf("got status change %d\n", cs)
 
-	con, err := tls.Dial("tcp4", os.Getenv("KLF200_ADDRESS"), conf)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("TLS OK\n")
-
-	req := &commands.PasswordEnterReq{
-		Password: os.Getenv("KLF200_PASSWORD"),
-	}
-
-	data, err := req.Write()
-	if err != nil {
-		panic(err)
-	}
-
-	frame := &transport.Frame{
-		Cmd:  req.Code(),
-		Data: data,
-	}
-
-	buff := transport.SlipEncode(frame.Write()).Bytes()
-	n, err := con.Write(buff)
-	if err != nil {
-		panic(err)
-	}
-
-	if n != len(buff) {
-		panic("bad write len")
-	}
-
-	// dumpByteSlice(buff)
-
-	fmt.Printf("WRITE OK\n")
-
-	buff = make([]byte, 500)
-	decoder := &transport.SlipDecoder{}
-
-	for {
-		n, err = con.Read(buff)
-		if err != nil {
-			panic(err)
-		}
-
-		if n == 0 {
-			panic("connection closed")
-		}
-
-		fmt.Printf("READ %d\n", n)
-
-		// dumpByteSlice(buff[0:n])
-
-		err = decoder.AddRaw(buff[0:n])
-		if err != nil {
-			panic(err)
-		}
-
-		for {
-			buff := decoder.NextFrame()
-			if buff == nil {
-				break
-			}
-
-			frame, err := transport.FrameRead(buff)
+		if cs == klf200.ConnectionOpen {
+			ver, err := client.Version()
 			if err != nil {
 				panic(err)
 			}
 
-			cfm := &commands.PasswordEnterCfm{}
-			if frame.Cmd == cfm.Code() {
-				cfm.Read(frame.Data)
-				fmt.Printf("cfm success %t\n", cfm.Success)
-			} else {
-				fmt.Printf("frame %d\n", frame.Cmd)
-			}
+			fmt.Printf("version %v\n", ver)
 		}
-	}
+	})
 
+	client.RegisterNotifications(func(n commands.Notify) {
+		fmt.Printf("got notify %d\n", n.Code())
+	})
+
+	for {
+	}
+	client.Close()
 }
 
 func dumpByteSlice(b []byte) {

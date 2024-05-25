@@ -2,12 +2,18 @@ package klf200
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"itv2-go/itv2/commands"
+	"klf200/commands"
+	"klf200/transport"
 	"log"
 	"sync"
 	"time"
 )
+
+const executeTimeout = time.Second * 5
+const reconnectTimeout = time.Second * 5
+const heartbeatInterval = time.Minute
 
 type ConnectionStatus uint8
 
@@ -30,19 +36,19 @@ func (status ConnectionStatus) String() string {
 	}
 }
 
-const heartbeatInterval = time.Second * 5
-
 type Client struct {
 	servAddr string
 	password string
 
 	status                    ConnectionStatus
 	connectionStatusCallbacks []func(ConnectionStatus)
-	notificationsCallbacks    []func(commands.Command)
+	notificationsCallbacks    []func(commands.Notify)
 
-	ctx        context.Context
-	close      context.CancelFunc
-	workerSync sync.WaitGroup
+	ctx         context.Context
+	close       context.CancelFunc
+	workerSync  sync.WaitGroup
+	trans       sync.Mutex
+	pendingConf *pendingConfirm
 
 	conn *connection
 }
@@ -57,7 +63,7 @@ func MakeClient(servAddr string, password string) *Client {
 		close:                     close,
 		status:                    ConnectionClosed,
 		connectionStatusCallbacks: make([]func(ConnectionStatus), 0),
-		notificationsCallbacks:    make([]func(commands.Command), 0),
+		notificationsCallbacks:    make([]func(commands.Notify), 0),
 	}
 
 	client.workerSync.Add(1)
@@ -92,7 +98,7 @@ func (client *Client) RegisterStatusChange(callback func(ConnectionStatus)) {
 	client.connectionStatusCallbacks = append(client.connectionStatusCallbacks, callback)
 }
 
-func (client *Client) RegisterNotifications(callback func(commands.Command)) {
+func (client *Client) RegisterNotifications(callback func(commands.Notify)) {
 	client.notificationsCallbacks = append(client.notificationsCallbacks, callback)
 }
 
@@ -105,7 +111,7 @@ func (client *Client) worker() {
 		select {
 		case <-client.ctx.Done():
 			return
-		case <-time.After(time.Second * 5):
+		case <-time.After(reconnectTimeout):
 			// reconnect
 		}
 	}
@@ -138,31 +144,155 @@ func (client *Client) connection() {
 
 	client.changeStatus(ConnectionOpen)
 	log.Printf("Handshake done")
-	/*
-	   client.transactions = newTransactionManager()
 
-	   	defer func() {
-	   		client.transactions.CancelAll()
-	   		client.transactions = nil
-	   	}()
+	defer func() {
+		pendingConf := client.pendingConf
+		if pendingConf != nil {
+			pendingConf.Cancel()
+		}
+	}()
 
-	   	for {
-	   		select {
-	   		case <-client.ctx.Done():
-	   			return
+	for {
+		select {
+		case <-client.ctx.Done():
+			return
 
-	   		case <-time.After(heartbeatInterval):
-	   			go client.heartbeat()
+		case <-time.After(heartbeatInterval):
+			go client.heartbeat()
 
-	   		case err := <-client.conn.Errors():
-	   			log.Printf("Error on connection: %s", err)
-	   			return
+		case err := <-client.conn.Errors():
+			log.Printf("Error on connection: %s", err)
+			return
 
-	   		case cmd := <-client.conn.Read():
-	   			client.processCommand(cmd)
-	   		}
-	   	}
-	*/
+		case frame := <-client.conn.Read():
+			client.processFrame(frame)
+		}
+	}
+}
+
+func (client *Client) processFrame(frame *transport.Frame) {
+	// try to read it as notify
+	notify := commands.GetNotify(frame.Cmd)
+	if notify != nil {
+		notify.Read(frame.Data)
+
+		for _, callback := range client.notificationsCallbacks {
+			go callback(notify)
+		}
+
+		return
+	}
+
+	pendingConf := client.pendingConf
+	if pendingConf != nil {
+		pendingConf.Confirm(frame)
+
+		return
+	}
+
+	// warn
+	log.Printf("got unmatched frame %d", frame.Cmd)
+}
+
+func (client *Client) send(conn *connection, req commands.Request) error {
+
+	data, err := req.Write()
+	if err != nil {
+		return err
+	}
+
+	frame := &transport.Frame{
+		Cmd:  req.Code(),
+		Data: data,
+	}
+
+	conn.Write(frame)
+
+	return nil
+}
+
+func (client *Client) execute(req commands.Request) (commands.Confirm, error) {
+	conn := client.conn
+	if conn == nil {
+		return nil, errors.New("not connected")
+	}
+
+	client.trans.Lock()
+	defer client.trans.Unlock()
+
+	pendingConf := newPendingConfirm()
+	client.pendingConf = pendingConf
+	defer func() {
+		client.pendingConf = nil
+	}()
+
+	if err := client.send(conn, req); err != nil {
+		return nil, err
+	}
+
+	frame, err := pendingConf.Wait()
+	if err != nil {
+		return nil, err
+	}
+
+	cfm := req.NewConfirm()
+	if frame.Cmd != cfm.Code() {
+		return nil, fmt.Errorf("unexpected confirm: got %d, expected %d", frame.Cmd, cfm.Code())
+	}
+
+	if err := cfm.Read(frame.Data); err != nil {
+		return nil, err
+	}
+
+	return cfm, nil
+}
+
+type pendingConfirm struct {
+	ctx    context.Context
+	cancel context.CancelCauseFunc
+	cfm    chan *transport.Frame
+}
+
+func newPendingConfirm() *pendingConfirm {
+	ctx := context.Background()
+	ctx, _ = context.WithTimeout(ctx, executeTimeout)
+	ctx, cancel := context.WithCancelCause(ctx)
+	cfm := make(chan *transport.Frame)
+
+	return &pendingConfirm{ctx, cancel, cfm}
+}
+
+func (pc *pendingConfirm) Cancel() {
+	pc.cancel(errors.New("connection closed"))
+}
+
+func (pc *pendingConfirm) Confirm(frame *transport.Frame) {
+	pc.cfm <- frame
+}
+
+func (pc *pendingConfirm) Wait() (*transport.Frame, error) {
+	select {
+	case <-pc.ctx.Done():
+		return nil, pc.ctx.Err()
+	case cfm := <-pc.cfm:
+		pc.cancel(nil)
+		return cfm, nil
+	}
+}
+
+func (client *Client) heartbeat() {
+
+	// TODO
+}
+
+func (client *Client) Version() (*commands.GetVersionCfm, error) {
+	req := &commands.GetVersionReq{}
+	cfm, err := client.execute(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return cfm.(*commands.GetVersionCfm), nil
 }
 
 /*

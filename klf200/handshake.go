@@ -101,7 +101,9 @@ func (handshake *handshakeData) sendCommandWithResponse(req commands.Request) (c
 		return nil, fmt.Errorf("received unexpected frame %d (expected %d)", frame.Cmd, cfm.Code())
 	}
 
-	cfm.Read(frame.Data)
+	if err := cfm.Read(frame.Data); err != nil {
+		return nil, err
+	}
 
 	return cfm, nil
 }
