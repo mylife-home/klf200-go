@@ -36,26 +36,41 @@ func main() {
 
 	client := klf200.MakeClient(os.Getenv("KLF200_ADDRESS"), os.Getenv("KLF200_PASSWORD"))
 
+	client.RegisterNotifications(notify)
+
 	client.RegisterStatusChange(func(cs klf200.ConnectionStatus) {
 		fmt.Printf("got status change %d\n", cs)
 
 		if cs == klf200.ConnectionOpen {
-			ver, err := client.Version()
-			if err != nil {
-				panic(err)
-			}
-
-			fmt.Printf("version %v\n", ver)
+			open(client)
 		}
-	})
-
-	client.RegisterNotifications(func(n commands.Notify) {
-		fmt.Printf("got notify %d\n", n.Code())
 	})
 
 	for {
 	}
+
 	client.Close()
+}
+
+func notify(n commands.Notify) {
+	fmt.Printf("got notify %d\n", n.Code())
+}
+
+func open(client *klf200.Client) {
+	ver, err := client.Version()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("SoftwareVersion.CommandVersionNumber = %d\n", ver.SoftwareVersion.CommandVersionNumber)
+	fmt.Printf("SoftwareVersion.VersionWholeNumber = %d\n", ver.SoftwareVersion.VersionWholeNumber)
+	fmt.Printf("SoftwareVersion.VersionSubNumber = %d\n", ver.SoftwareVersion.VersionSubNumber)
+	fmt.Printf("SoftwareVersion.BranchID = %d\n", ver.SoftwareVersion.BranchID)
+	fmt.Printf("SoftwareVersion.BuildNumber = %d\n", ver.SoftwareVersion.BuildNumber)
+	fmt.Printf("SoftwareVersion.MicroBuild = %d\n", ver.SoftwareVersion.MicroBuild)
+	fmt.Printf("HardwareVersion = %d\n", ver.HardwareVersion)
+	fmt.Printf("ProductGroup = %d\n", ver.ProductGroup)
+	fmt.Printf("ProductType = %d\n", ver.ProductType)
 }
 
 func dumpByteSlice(b []byte) {
