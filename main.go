@@ -34,7 +34,7 @@ func notify(n commands.Notify) {
 }
 
 func open(client *klf200.Client) {
-	ver, err := client.GetVersion()
+	ver, err := client.Device().GetVersion()
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +49,7 @@ func open(client *klf200.Client) {
 	fmt.Printf("ProductGroup = %d\n", ver.ProductGroup)
 	fmt.Printf("ProductType = %d\n", ver.ProductType)
 
-	state, err := client.GetState()
+	state, err := client.Device().GetState()
 	if err != nil {
 		panic(err)
 	}
@@ -60,7 +60,7 @@ func open(client *klf200.Client) {
 	// client.SetUtc(time.Now())
 	// TODO: set time zone
 
-	time, err := client.GetLocalTime()
+	time, err := client.Device().GetLocalTime()
 	if err != nil {
 		panic(err)
 	}
@@ -76,7 +76,7 @@ func open(client *klf200.Client) {
 	fmt.Printf("DayOfYear = %d\n", time.LocalTime.DayOfYear)
 	fmt.Printf("DaylightSavingFlag = %d\n", time.LocalTime.DaylightSavingFlag)
 
-	net, err := client.GetNetworkSetup()
+	net, err := client.Device().GetNetworkSetup()
 	if err != nil {
 		panic(err)
 	}

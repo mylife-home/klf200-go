@@ -44,21 +44,21 @@ func (cfm *GetNetworkSetupCfm) Read(data []byte) error {
 	}
 
 	reader := binary.MakeBinaryReader(bytes.NewBuffer(data))
-	var value uint8
+	var dhcp uint8
 
 	cfm.IpAddress = cfm.readIp(reader)
 	cfm.Mask = cfm.readMask(reader)
 	cfm.DefGW = cfm.readIp(reader)
 
-	value, _ = reader.ReadU8()
+	dhcp, _ = reader.ReadU8()
 
-	switch value {
+	switch dhcp {
 	case 0:
 		cfm.DHCP = false
 	case 1:
 		cfm.DHCP = true
 	default:
-		return fmt.Errorf("bad DHCP flag %d", value)
+		return fmt.Errorf("bad DHCP flag %d", dhcp)
 	}
 
 	return nil

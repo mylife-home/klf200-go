@@ -51,6 +51,9 @@ type Client struct {
 	pendingConf *pendingConfirm
 
 	conn *connection
+
+	device   *Device
+	commands *Commands
 }
 
 func MakeClient(servAddr string, password string) *Client {
@@ -65,6 +68,9 @@ func MakeClient(servAddr string, password string) *Client {
 		connectionStatusCallbacks: make([]func(ConnectionStatus), 0),
 		notificationsCallbacks:    make([]func(commands.Notify), 0),
 	}
+
+	client.device = &Device{client}
+	client.commands = &Commands{client}
 
 	return client
 }
@@ -282,139 +288,27 @@ func (pc *pendingConfirm) Wait() (*transport.Frame, error) {
 }
 
 func (client *Client) heartbeat() {
-	/*
-		cmd := &commands.UserActivity{
-			PartitionNumber: &serialization.VarBytes{},
-			Type:            4,
-		}
+	if _, err := client.device.GetState(); err != nil {
+		log.Printf("Heartbeat error: %s", err)
+	}
 
-		if err := client.executeCommand(cmd); err != nil {
-			log.Printf("Heartbeat error: %s", err)
-		}
-
-		log.Printf("Heartbeat OK")
-	*/
+	log.Printf("Heartbeat OK")
 }
 
-func (client *Client) ChangePassword(newPassword string) error {
-	req := &commands.PasswordChangeReq{Password: newPassword}
-	cfm, err := client.execute(req)
-	if err != nil {
-		return err
-	}
-
-	if !cfm.(*commands.PasswordChangeCfm).Success {
-		return errors.New("the request failed")
-	}
-
-	return nil
+func (client *Client) Device() *Device {
+	return client.device
 }
 
-func (client *Client) GetVersion() (*commands.GetVersionCfm, error) {
-	req := &commands.GetVersionReq{}
-	cfm, err := client.execute(req)
-	if err != nil {
-		return nil, err
-	}
+// TODO: Config
 
-	return cfm.(*commands.GetVersionCfm), nil
+// TODO: Info
+
+// TODO: ActivationLog
+
+func (client *Client) Commands() *Commands {
+	return client.commands
 }
 
-func (client *Client) GetProtocolVersion() (*commands.GetProtocolVersionCfm, error) {
-	req := &commands.GetProtocolVersionReq{}
-	cfm, err := client.execute(req)
-	if err != nil {
-		return nil, err
-	}
+// TODO: Scenes
 
-	return cfm.(*commands.GetProtocolVersionCfm), nil
-}
-
-func (client *Client) GetState() (*commands.GetStateCfm, error) {
-	req := &commands.GetStateReq{}
-	cfm, err := client.execute(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return cfm.(*commands.GetStateCfm), nil
-}
-
-func (client *Client) LeaveLearnState() error {
-	req := &commands.LeaveLearnStateReq{}
-	cfm, err := client.execute(req)
-	if err != nil {
-		return err
-	}
-
-	if !cfm.(*commands.LeaveLearnStateCfm).Success {
-		return errors.New("the request failed")
-	}
-
-	return nil
-}
-
-func (client *Client) SetUtc(timestamp time.Time) error {
-	req := &commands.SetUtcReq{Timestamp: timestamp}
-	_, err := client.execute(req)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (client *Client) SetTimeZone(tzstr string) error {
-	// TODO: help create tzstr
-	req := &commands.RtcSetTimeZoneReq{TimeZoneString: tzstr}
-	cfm, err := client.execute(req)
-	if err != nil {
-		return err
-	}
-
-	if !cfm.(*commands.RtcSetTimeZoneCfm).Success {
-		return errors.New("the request failed")
-	}
-
-	return nil
-}
-
-func (client *Client) GetLocalTime() (*commands.GetLocalTimeCfm, error) {
-	req := &commands.GetLocalTimeReq{}
-	cfm, err := client.execute(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return cfm.(*commands.GetLocalTimeCfm), nil
-}
-
-func (client *Client) Reboot() error {
-	req := &commands.RebootReq{}
-	_, err := client.execute(req)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (client *Client) SetFactoryDefault() error {
-	req := &commands.SetFactoryDefaultReq{}
-	_, err := client.execute(req)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (client *Client) GetNetworkSetup() (*commands.GetNetworkSetupCfm, error) {
-	req := &commands.GetNetworkSetupReq{}
-	cfm, err := client.execute(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return cfm.(*commands.GetNetworkSetupCfm), nil
-}
+// TODO: ContactInput
