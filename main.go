@@ -1,36 +1,11 @@
 package main
 
 import (
-	"context"
-	"crypto/tls"
 	"fmt"
 	"klf200"
 	"klf200/commands"
-	"net"
 	"os"
-	"sync"
 )
-
-type connection struct {
-	conn        *tls.Conn
-	workersSync sync.WaitGroup
-}
-
-func makeConnection(ctx context.Context, address string) (*connection, error) {
-	dialer := net.Dialer{}
-	netConn, err := dialer.DialContext(ctx, "tcp", address)
-	if err != nil {
-		return nil, err
-	}
-
-	conf := &tls.Config{}
-	conf.InsecureSkipVerify = true
-	tlsConn := tls.Client(netConn, conf)
-
-	conn := &connection{conn: tlsConn}
-
-	return conn, nil
-}
 
 func main() {
 
