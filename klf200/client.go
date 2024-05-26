@@ -243,6 +243,9 @@ func (client *Client) processFrame(frame *transport.Frame) {
 	if notify != nil {
 		notify.Read(frame.Data)
 
+		client.notifiersLock.Lock()
+		defer client.notifiersLock.Unlock()
+
 		for n := range client.notifiers {
 			n.process(notify)
 		}

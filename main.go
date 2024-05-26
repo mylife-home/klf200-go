@@ -1,9 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"klf200"
-	"klf200/commands"
 	"os"
 )
 
@@ -11,7 +11,7 @@ func main() {
 
 	client := klf200.MakeClient(os.Getenv("KLF200_ADDRESS"), os.Getenv("KLF200_PASSWORD"))
 
-	client.RegisterNotifications(notify)
+	//client.RegisterNotifications(notify)
 
 	client.RegisterStatusChange(func(cs klf200.ConnectionStatus) {
 		fmt.Printf("got status change %d\n", cs)
@@ -29,10 +29,11 @@ func main() {
 	client.Close()
 }
 
-func notify(n commands.Notify) {
-	fmt.Printf("got notify %d\n", n.Code())
-}
-
+/*
+	func notify(n commands.Notify) {
+		fmt.Printf("got notify %d\n", n.Code())
+	}
+*/
 func open(client *klf200.Client) {
 	ver, err := client.Device().GetVersion()
 	if err != nil {
@@ -85,6 +86,16 @@ func open(client *klf200.Client) {
 	fmt.Printf("IpAddress = %v\n", net.IpAddress)
 	fmt.Printf("Mask = %v\n", net.Mask)
 	fmt.Printf("DefGW = %v\n", net.DefGW)
+
+	objects, err := client.Config().GetSystemTable(context.Background())
+	if err != nil {
+		panic(err)
+	}
+
+	for _, object := range objects {
+		fmt.Printf("Object = %v\n", object)
+	}
+
 }
 
 func dumpByteSlice(b []byte) {
