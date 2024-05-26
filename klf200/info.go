@@ -1,6 +1,6 @@
 package klf200
 
-type Commands struct {
+type Info struct {
 	client *Client
 }
 

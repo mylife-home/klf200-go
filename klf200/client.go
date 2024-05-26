@@ -359,9 +359,13 @@ func (client *Client) Device() *Device {
 	return client.device
 }
 
-// TODO: Config
+func (client *Client) Config() *Config {
+	return client.config
+}
 
-// TODO: Info
+func (client *Client) Info() *Info {
+	return client.info
+}
 
 // TODO: ActivationLog
 
