@@ -7,6 +7,7 @@ import (
 	"klf200/commands"
 	"klf200/transport"
 	"log"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -36,13 +37,19 @@ func (status ConnectionStatus) String() string {
 	}
 }
 
+type Notifier interface {
+	Stream() <-chan commands.Notify
+	Close()
+}
+
 type Client struct {
 	servAddr string
 	password string
 
 	status                    ConnectionStatus
 	connectionStatusCallbacks []func(ConnectionStatus)
-	notificationsCallbacks    []func(commands.Notify)
+	notifiers                 map[*notifier]struct{}
+	notifiersLock             sync.Mutex
 
 	ctx         context.Context
 	close       context.CancelFunc
@@ -53,6 +60,8 @@ type Client struct {
 	conn *connection
 
 	device   *Device
+	config   *Config
+	info     *Info
 	commands *Commands
 }
 
@@ -66,10 +75,12 @@ func MakeClient(servAddr string, password string) *Client {
 		close:                     close,
 		status:                    ConnectionClosed,
 		connectionStatusCallbacks: make([]func(ConnectionStatus), 0),
-		notificationsCallbacks:    make([]func(commands.Notify), 0),
+		notifiers:                 make(map[*notifier]struct{}),
 	}
 
 	client.device = &Device{client}
+	client.config = newConfig(client)
+	client.info = &Info{client}
 	client.commands = &Commands{client}
 
 	return client
@@ -105,8 +116,57 @@ func (client *Client) RegisterStatusChange(callback func(ConnectionStatus)) {
 	client.connectionStatusCallbacks = append(client.connectionStatusCallbacks, callback)
 }
 
-func (client *Client) RegisterNotifications(callback func(commands.Notify)) {
-	client.notificationsCallbacks = append(client.notificationsCallbacks, callback)
+func (client *Client) RegisterNotifications(types []reflect.Type) Notifier {
+	n := &notifier{client: client, stream: make(chan commands.Notify, 1000)}
+
+	if types != nil {
+		n.types = make(map[reflect.Type]struct{})
+
+		for _, typ := range types {
+			n.types[typ] = struct{}{}
+		}
+	}
+
+	client.notifiersLock.Lock()
+	defer client.notifiersLock.Unlock()
+
+	client.notifiers[n] = struct{}{}
+
+	return n
+}
+
+type notifier struct {
+	client *Client
+	types  map[reflect.Type]struct{}
+	stream chan commands.Notify
+}
+
+func (n *notifier) process(notif commands.Notify) {
+	if n.filter(notif) {
+		n.stream <- notif
+
+	}
+}
+
+func (n *notifier) filter(notif commands.Notify) bool {
+	if n.types == nil {
+		return true
+	}
+
+	_, found := n.types[reflect.TypeOf(notif)]
+	return found
+}
+
+func (n *notifier) Stream() <-chan commands.Notify {
+	return n.stream
+}
+
+func (n *notifier) Close() {
+	n.client.notifiersLock.Lock()
+	defer n.client.notifiersLock.Unlock()
+
+	delete(n.client.notifiers, n)
+	close(n.stream)
 }
 
 func (client *Client) worker() {
@@ -183,8 +243,8 @@ func (client *Client) processFrame(frame *transport.Frame) {
 	if notify != nil {
 		notify.Read(frame.Data)
 
-		for _, callback := range client.notificationsCallbacks {
-			go callback(notify)
+		for n := range client.notifiers {
+			n.process(notify)
 		}
 
 		return
