@@ -37,8 +37,10 @@ func (config *Config) GetSystemTable(ctx context.Context) ([]commands.Systemtabl
 	objects := make([]commands.SystemtableObject, 0)
 
 	for {
-		// todo timeout
-		notif := <-n.Stream()
+		notif, err := config.selectNotif(ctx, n)
+		if err != nil {
+			return nil, err
+		}
 
 		packet := notif.(*commands.CsGetSystemtableDataNtf)
 
@@ -55,6 +57,16 @@ func (config *Config) GetSystemTable(ctx context.Context) ([]commands.Systemtabl
 	n.Close()
 
 	return objects, nil
+}
+
+func (config *Config) selectNotif(ctx context.Context, n Notifier) (commands.Notify, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+
+	case notif := <-n.Stream():
+		return notif, nil
+	}
 }
 
 // TODO: missing API
