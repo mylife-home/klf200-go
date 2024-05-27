@@ -87,9 +87,4 @@ func (info *Info) selectNotif(ctx context.Context, n Notifier) (commands.Notify,
 	}
 }
 
-// GW_GET_ALL_NODES_INFORMATION_REQ
-// GW_GET_ALL_NODES_INFORMATION_CFM
-// GW_GET_ALL_NODES_INFORMATION_NTF
-// GW_GET_ALL_NODES_INFORMATION_FINISHED_NTF
-
 // TODO: missing API
