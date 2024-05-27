@@ -96,6 +96,14 @@ func open(client *klf200.Client) {
 		fmt.Printf("Object = %v\n", object)
 	}
 
+	nodes, err := client.Info().GetAllNodesInformation(context.TODO())
+	if err != nil {
+		panic(err)
+	}
+
+	for _, node := range nodes {
+		fmt.Printf("Node = %v\n", node)
+	}
 }
 
 func dumpByteSlice(b []byte) {

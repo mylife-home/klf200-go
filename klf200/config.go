@@ -61,6 +61,7 @@ func (config *Config) GetSystemTable(ctx context.Context) ([]commands.Systemtabl
 
 func (config *Config) selectNotif(ctx context.Context, n Notifier) (commands.Notify, error) {
 	select {
+	// TODO: handle disconnection
 	case <-ctx.Done():
 		return nil, ctx.Err()
 
@@ -68,5 +69,7 @@ func (config *Config) selectNotif(ctx context.Context, n Notifier) (commands.Not
 		return notif, nil
 	}
 }
+
+// TODO: keep systemtable data cached and listen to GW_CS_SYSTEM_TABLE_UPDATE_NTF to refresh
 
 // TODO: missing API

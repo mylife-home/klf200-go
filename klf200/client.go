@@ -80,7 +80,7 @@ func MakeClient(servAddr string, password string) *Client {
 
 	client.device = &Device{client}
 	client.config = newConfig(client)
-	client.info = &Info{client}
+	client.info = newInfo(client)
 	client.commands = &Commands{client}
 
 	return client
