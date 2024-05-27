@@ -152,11 +152,11 @@ func (ntf *CsGetSystemtableDataNtf) readObject(reader binary.BinaryReader, obj *
 
 	obj.ActuatorAddress = 0
 	u8, _ = reader.ReadU8()
-	obj.ActuatorAddress |= uint(u8)
+	obj.ActuatorAddress |= uint(u8) << 16
 	u8, _ = reader.ReadU8()
 	obj.ActuatorAddress |= uint(u8) << 8
 	u8, _ = reader.ReadU8()
-	obj.ActuatorAddress |= uint(u8) << 16
+	obj.ActuatorAddress |= uint(u8)
 
 	u16, _ = reader.ReadU16()
 	obj.ActuatorType = ActuatorType(u16 >> 6)
@@ -182,9 +182,93 @@ func (ntf *CsGetSystemtableDataNtf) readObject(reader binary.BinaryReader, obj *
 
 	obj.BackboneReferenceNumber = 0
 	u8, _ = reader.ReadU8()
-	obj.BackboneReferenceNumber |= uint(u8)
+	obj.BackboneReferenceNumber |= uint(u8) << 16
 	u8, _ = reader.ReadU8()
 	obj.BackboneReferenceNumber |= uint(u8) << 8
 	u8, _ = reader.ReadU8()
-	obj.BackboneReferenceNumber |= uint(u8) << 16
+	obj.BackboneReferenceNumber |= uint(u8)
+}
+
+func (t ActuatorType) String() string {
+	switch t {
+	case VenetianBlind:
+		return "VenetianBlind"
+	case RollerShutter:
+		return "RollerShutter"
+	case Awning:
+		return "Awning"
+	case WindowOpener:
+		return "WindowOpener"
+	case GarageOpener:
+		return "GarageOpener"
+	case Light:
+		return "Light"
+	case GateOpener:
+		return "GateOpener"
+	case RollingDoorOpener:
+		return "RollingDoorOpener"
+	case Lock:
+		return "Lock"
+	case Blind:
+		return "Blind"
+	case Beacon:
+		return "Beacon"
+	case DualShutter:
+		return "DualShutter"
+	case HeatingTemperatureInterface:
+		return "HeatingTemperatureInterface"
+	case OnOffSwitch:
+		return "OnOffSwitch"
+	case HorizontalAwning:
+		return "HorizontalAwning"
+	case ExternalVenetianBlind:
+		return "ExternalVenetianBlind"
+	case LouvreBlind:
+		return "LouvreBlind"
+	case CurtainTrack:
+		return "CurtainTrack"
+	case VentilationPoint:
+		return "VentilationPoint"
+	case ExteriorHeating:
+		return "ExteriorHeating"
+	case HeatPump:
+		return "HeatPump"
+	case IntrusionAlarm:
+		return "IntrusionAlarm"
+	case SwingingShutter:
+		return "SwingingShutter"
+	default:
+		return fmt.Sprintf("<%d>", t)
+	}
+}
+
+func (m IoManufacturer) String() string {
+	switch m {
+	case Velux:
+		return "Velux"
+	case Somfy:
+		return "Somfy"
+	case Honeywell:
+		return "Honeywell"
+	case Hormann:
+		return "Hormann"
+	case AssaAbloy:
+		return "AssaAbloy"
+	case Niko:
+		return "Niko"
+	case WindowMaster:
+		return "WindowMaster"
+	case Renson:
+		return "Renson"
+	case Ciat:
+		return "Ciat"
+	case Secuyou:
+		return "Secuyou"
+	case Overkiz:
+		return "Overkiz"
+	case AtlanticGroup:
+		return "AtlanticGroup"
+	default:
+		return fmt.Sprintf("<%d>", m)
+	}
 }
