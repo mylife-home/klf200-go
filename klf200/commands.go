@@ -43,8 +43,6 @@ func (cmds *Commands) ChangePosition(nodeIndexes []int, position commands.MPValu
 		LockTime:                  commands.NewLockTimeUnlimited(),
 	}
 
-	b, _ := req.Write()
-
 	cfm, err := cmds.client.execute(req)
 	if err != nil {
 		return nil, err
