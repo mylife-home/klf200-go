@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"klf200"
+	"klf200/commands"
 	"os"
 )
 
@@ -104,6 +105,17 @@ func open(client *klf200.Client) {
 	for _, node := range nodes {
 		fmt.Printf("Node = %v\n", node)
 	}
+
+	for _, node := range nodes {
+		fmt.Printf("%s %d\n", node.Name, node.CurrentPosition)
+	}
+
+	sess, err := client.Commands().ChangePosition([]int{7}, commands.NewMPValueRelative(0))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("Session = %v\n", sess)
 }
 
 func dumpByteSlice(b []byte) {
