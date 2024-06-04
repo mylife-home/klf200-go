@@ -458,7 +458,7 @@ const GW_PASSWORD_CHANGE_NTF Command = 0x3004
 func (cmd Command) String() string {
 	switch cmd {
 	case GW_ERROR_NTF:
-		return "GW_REBOOT_REQ"
+		return "GW_ERROR_NTF"
 	case GW_REBOOT_REQ:
 		return "GW_REBOOT_REQ"
 	case GW_REBOOT_CFM:
