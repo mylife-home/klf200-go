@@ -110,12 +110,23 @@ func open(client *klf200.Client) {
 		fmt.Printf("%s %d\n", node.Name, node.CurrentPosition)
 	}
 
-	sess, err := client.Commands().ChangePosition([]int{7}, commands.NewMPValueRelative(0))
+	sess, err := client.Commands().ChangePosition(context.Background(), 7, commands.NewMPValueRelative(-30))
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("Session = %v\n", sess)
+
+	for event := range sess.Events() {
+		switch event := event.(type) {
+		case *klf200.RunError:
+			fmt.Printf("run error %v\n", event)
+		case *klf200.RunStatus:
+			fmt.Printf("run status %v\n", event)
+		case *klf200.RunRemainingTime:
+			fmt.Printf("run remaining time %v\n", event)
+		}
+	}
 }
 
 func dumpByteSlice(b []byte) {

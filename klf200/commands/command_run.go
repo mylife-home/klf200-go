@@ -261,7 +261,7 @@ func (ntf *CommandRemainingTimeNtf) Code() transport.Command {
 }
 
 func (ntf *CommandRemainingTimeNtf) Read(data []byte) error {
-	if len(data) != 2 {
+	if len(data) != 6 {
 		return fmt.Errorf("bad length")
 	}
 
@@ -278,8 +278,8 @@ func (ntf *CommandRemainingTimeNtf) Read(data []byte) error {
 	u8, _ = reader.ReadU8()
 	ntf.NodeParameter = FunctionalParameter(u8)
 
-	u8, _ = reader.ReadU8()
-	ntf.Duration = time.Second * time.Duration(u8)
+	u16, _ = reader.ReadU16()
+	ntf.Duration = time.Second * time.Duration(u16)
 
 	return nil
 }
