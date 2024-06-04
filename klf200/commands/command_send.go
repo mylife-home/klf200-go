@@ -169,7 +169,7 @@ func NewMPValueAbsolute(percent int) MPValue {
 func NewMPValueRelative(percent int) MPValue {
 	// C900 -> D0D0
 	const size = 0xD0D0 - 0xC900
-	return MPValue(((percent + 100) * size / 100) + 0xC900)
+	return MPValue(((percent + 100) * size / 200) + 0xC900)
 }
 
 func NewMPValueTarget() MPValue {
