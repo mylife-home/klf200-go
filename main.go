@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"klf200"
 	"os"
+	"time"
 )
 
 func main() {
@@ -61,21 +62,21 @@ func open(client *klf200.Client) {
 	// client.SetUtc(time.Now())
 	// TODO: set time zone
 
-	time, err := client.Device().GetLocalTime()
+	devTime, err := client.Device().GetLocalTime()
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("UtcTime = %v\n", time.UtcTime)
-	fmt.Printf("Second = %d\n", time.LocalTime.Second)
-	fmt.Printf("Minute = %d\n", time.LocalTime.Minute)
-	fmt.Printf("Hour = %d\n", time.LocalTime.Hour)
-	fmt.Printf("DayOfMonth = %d\n", time.LocalTime.DayOfMonth)
-	fmt.Printf("Month = %d\n", time.LocalTime.Month)
-	fmt.Printf("Year = %d\n", time.LocalTime.Year)
-	fmt.Printf("WeekDay = %d\n", time.LocalTime.WeekDay)
-	fmt.Printf("DayOfYear = %d\n", time.LocalTime.DayOfYear)
-	fmt.Printf("DaylightSavingFlag = %d\n", time.LocalTime.DaylightSavingFlag)
+	fmt.Printf("UtcTime = %v\n", devTime.UtcTime)
+	fmt.Printf("Second = %d\n", devTime.LocalTime.Second)
+	fmt.Printf("Minute = %d\n", devTime.LocalTime.Minute)
+	fmt.Printf("Hour = %d\n", devTime.LocalTime.Hour)
+	fmt.Printf("DayOfMonth = %d\n", devTime.LocalTime.DayOfMonth)
+	fmt.Printf("Month = %d\n", devTime.LocalTime.Month)
+	fmt.Printf("Year = %d\n", devTime.LocalTime.Year)
+	fmt.Printf("WeekDay = %d\n", devTime.LocalTime.WeekDay)
+	fmt.Printf("DayOfYear = %d\n", devTime.LocalTime.DayOfYear)
+	fmt.Printf("DaylightSavingFlag = %d\n", devTime.LocalTime.DaylightSavingFlag)
 
 	net, err := client.Device().GetNetworkSetup()
 	if err != nil {
@@ -130,15 +131,20 @@ func open(client *klf200.Client) {
 	   	}
 	*/
 
-	status, err := client.Commands().Status(context.Background(), []int{0, 1, 2, 3, 4, 5, 6, 7})
+	for {
+		status, err := client.Commands().Status(context.Background(), []int{0, 1, 2, 3, 4, 5, 6, 7})
 
-	if err != nil {
-		panic(err)
+		if err != nil {
+			panic(err)
+		}
+
+		for node, status := range status {
+			fmt.Printf("Status for node %d = %v\n", node, status)
+		}
+
+		time.Sleep(time.Second * 5)
 	}
 
-	for node, status := range status {
-		fmt.Printf("Status for node %d = %v\n", node, status)
-	}
 }
 
 func dumpByteSlice(b []byte) {
