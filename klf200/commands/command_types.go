@@ -1,6 +1,9 @@
 package commands
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type CommandOriginator int
 
@@ -200,6 +203,24 @@ func (value MPValue) Default() bool {
 
 func (value MPValue) Ignore() bool {
 	return int(value) == 0xD400
+}
+
+func (value MPValue) String() string {
+	if ok, val := value.Absolute(); ok {
+		return fmt.Sprintf("Absolute(%d%%)", val)
+	} else if ok, val := value.Relative(); ok {
+		return fmt.Sprintf("Relative(%d%%)", val)
+	} else if value.Target() {
+		return "Target"
+	} else if value.Current() {
+		return "Current"
+	} else if value.Default() {
+		return "Default"
+	} else if value.Ignore() {
+		return "Ignore"
+	} else {
+		return fmt.Sprintf("?? %d", value)
+	}
 }
 
 type PriorityLevelLock int
