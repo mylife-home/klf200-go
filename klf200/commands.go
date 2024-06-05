@@ -3,6 +3,7 @@ package klf200
 import (
 	"context"
 	"errors"
+	"fmt"
 	"klf200/commands"
 	"reflect"
 	"sync/atomic"
@@ -30,7 +31,6 @@ type Session struct {
 	id       int
 	notifier Notifier
 	ctx      context.Context
-	cancel   context.CancelCauseFunc
 	events   chan Event
 }
 
@@ -88,7 +88,9 @@ func (sess *Session) worker() {
 			}
 
 		case *commands.SessionFinishedNtf:
-			finished = true
+			if sess.id == notif.SessionID {
+				finished = true
+			}
 		}
 
 		if finished {
@@ -163,8 +165,136 @@ func (cmds *Commands) ChangePosition(ctx context.Context, nodeIndex int, positio
 	return newSession(cmds.client, sessionId, ctx), nil
 }
 
-// Mode
+func (cmds *Commands) Mode(ctx context.Context, nodeIndex int) (*Session, error) {
+	sessionId := cmds.newSessionId()
 
-// Status request
+	// TODO: customize parameters
+	req := &commands.ModeSendReq{
+		SessionID:         sessionId,
+		CommandOriginator: commands.CommandOriginatorUser,
+		PriorityLevel:     commands.PriorityUserLevel2,
+		ModeNumber:        0,
+		ModeParameter:     0,
+		NodeIndexes:       []int{nodeIndex},
+		PriorityLevelLock: commands.PriorityLevelLockNoNewLock,
+		PriorityLevelInfo: commands.NewPriorityLevelInfo(),
+		LockTime:          commands.NewLockTimeUnlimited(),
+	}
+
+	cfm, err := cmds.client.execute(req)
+	if err != nil {
+		return nil, err
+	}
+
+	tcfm := cfm.(*commands.ModeSendCfm)
+
+	if tcfm.Status != commands.ModeSendStatusSuccess {
+		return nil, fmt.Errorf("error : '%s'", tcfm.Status)
+	}
+
+	if tcfm.SessionID != sessionId {
+		return nil, errors.New("session id mismatch")
+	}
+
+	return newSession(cmds.client, sessionId, ctx), nil
+}
+
+func (cmds *Commands) Status(ctx context.Context, nodeIndexes []int) (map[int]StatusData, error) {
+	sessionId := cmds.newSessionId()
+
+	// TODO: customize parameters
+	req := &commands.StatusRequestReq{
+		SessionID:            sessionId,
+		NodeIndexes:          nodeIndexes,
+		StatusType:           commands.StatusRequestMainInfo,
+		FunctionalParameters: make(map[commands.FunctionalParameter]bool),
+	}
+
+	n := cmds.client.RegisterNotifications([]reflect.Type{
+		reflect.TypeOf(&commands.StatusRequestNtf{}),
+		reflect.TypeOf(&commands.SessionFinishedNtf{}),
+	})
+
+	cfm, err := cmds.client.execute(req)
+	if err != nil {
+		return nil, err
+	}
+
+	tcfm := cfm.(*commands.StatusRequestCfm)
+
+	if !tcfm.Success {
+		return nil, errors.New("the request failed")
+	}
+
+	if tcfm.SessionID != sessionId {
+		return nil, errors.New("session id mismatch")
+	}
+
+	data := make(map[int]StatusData)
+
+	for {
+		notif, err := cmds.selectStatusNotif(ctx, n)
+		if err != nil {
+			return nil, err
+		}
+
+		finished := false
+
+		switch notif := notif.(type) {
+		case *commands.StatusRequestNtf:
+			if sessionId == notif.SessionID {
+				mainInfo := notif.StatusData.(*commands.StatusDataMainInfo)
+
+				statusData := &StatusData{
+					StatusID:                   notif.StatusID,
+					RunStatus:                  notif.RunStatus,
+					StatusReply:                notif.StatusReply,
+					TargetPosition:             mainInfo.TargetPosition,
+					CurrentPosition:            mainInfo.CurrentPosition,
+					RemainingTime:              mainInfo.RemainingTime,
+					LastMasterExecutionAddress: mainInfo.LastMasterExecutionAddress,
+					LastCommandOriginator:      mainInfo.LastCommandOriginator,
+				}
+
+				data[notif.NodeIndex] = *statusData
+			}
+
+		case *commands.SessionFinishedNtf:
+			if sessionId == notif.SessionID {
+				finished = true
+			}
+		}
+
+		if finished {
+			break
+		}
+	}
+
+	n.Close()
+
+	return data, nil
+}
+
+type StatusData struct {
+	StatusID                   commands.CommandRunOwner
+	RunStatus                  commands.CommandRunStatus
+	StatusReply                commands.CommandRunStatusReply
+	TargetPosition             commands.MPValue
+	CurrentPosition            commands.MPValue
+	RemainingTime              time.Duration
+	LastMasterExecutionAddress uint32
+	LastCommandOriginator      commands.CommandOriginator
+}
+
+func (cmds *Commands) selectStatusNotif(ctx context.Context, n Notifier) (commands.Notify, error) {
+	select {
+	// TODO: handle disconnection
+	case <-ctx.Done():
+		return nil, ctx.Err()
+
+	case notif := <-n.Stream():
+		return notif, nil
+	}
+}
 
 // TODO: missing API

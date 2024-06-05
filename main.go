@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"klf200"
-	"klf200/commands"
 	"os"
 )
 
@@ -109,23 +108,36 @@ func open(client *klf200.Client) {
 	for _, node := range nodes {
 		fmt.Printf("%s %d\n", node.Name, node.CurrentPosition)
 	}
+	/*
+	   //sess, err := client.Commands().ChangePosition(context.Background(), 7, commands.NewMPValueRelative(-30))
+	   //sess, err := client.Commands().Mode(context.Background(), 7)
 
-	sess, err := client.Commands().ChangePosition(context.Background(), 7, commands.NewMPValueRelative(-30))
+	   	if err != nil {
+	   		panic(err)
+	   	}
+
+	   fmt.Printf("Session = %v\n", sess)
+
+	   	for event := range sess.Events() {
+	   		switch event := event.(type) {
+	   		case *klf200.RunError:
+	   			fmt.Printf("run error %v\n", event)
+	   		case *klf200.RunStatus:
+	   			fmt.Printf("run status %v\n", event)
+	   		case *klf200.RunRemainingTime:
+	   			fmt.Printf("run remaining time %v\n", event)
+	   		}
+	   	}
+	*/
+
+	status, err := client.Commands().Status(context.Background(), []int{0, 1, 2, 3, 4, 5, 6, 7})
+
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("Session = %v\n", sess)
-
-	for event := range sess.Events() {
-		switch event := event.(type) {
-		case *klf200.RunError:
-			fmt.Printf("run error %v\n", event)
-		case *klf200.RunStatus:
-			fmt.Printf("run status %v\n", event)
-		case *klf200.RunRemainingTime:
-			fmt.Printf("run remaining time %v\n", event)
-		}
+	for node, status := range status {
+		fmt.Printf("Status for node %d = %v\n", node, status)
 	}
 }
 

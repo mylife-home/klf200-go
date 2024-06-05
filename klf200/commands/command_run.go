@@ -21,6 +21,9 @@ type CommandRunStatusNtf struct {
 
 type CommandRunOwner int
 
+// The status is from a local user activation. (My self)
+const CommandRunOwnerSelf CommandRunOwner = 0x00
+
 // The status is from a user activation.
 const CommandRunOwnerUser CommandRunOwner = 0x01
 
