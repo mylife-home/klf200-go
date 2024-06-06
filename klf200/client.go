@@ -241,7 +241,11 @@ func (client *Client) processFrame(frame *transport.Frame) {
 	// try to read it as notify
 	notify := commands.GetNotify(frame.Cmd)
 	if notify != nil {
-		notify.Read(frame.Data)
+		if err := notify.Read(frame.Data); err != nil {
+			// Error
+			log.Printf("Cannot read frame %s: %v\n", frame.Cmd, err)
+			return
+		}
 
 		client.notifiersLock.Lock()
 		defer client.notifiersLock.Unlock()
@@ -261,7 +265,7 @@ func (client *Client) processFrame(frame *transport.Frame) {
 	}
 
 	// warn
-	log.Printf("got unmatched frame %d", frame.Cmd)
+	log.Printf("Got unmatched frame %s", frame.Cmd)
 }
 
 func (client *Client) send(conn *connection, req commands.Request) error {

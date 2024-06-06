@@ -205,12 +205,14 @@ func (ntf *StatusRequestNtf) Read(data []byte) error {
 		}
 
 		ntf.StatusData = &StatusDataMainInfo{}
-
-	default:
-		return fmt.Errorf("invalid status type %v", ntf.StatusType)
 	}
 
-	ntf.StatusData.read(reader)
+	// Note: may be 255 if the status reply indicates an error.
+	// In this case there is no data (only 0s).
+
+	if ntf.StatusData != nil {
+		ntf.StatusData.read(reader)
+	}
 
 	return nil
 }

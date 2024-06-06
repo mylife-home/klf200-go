@@ -243,17 +243,22 @@ func (cmds *Commands) Status(ctx context.Context, nodeIndexes []int) (map[int]St
 		switch notif := notif.(type) {
 		case *commands.StatusRequestNtf:
 			if sessionId == notif.SessionID {
-				mainInfo := notif.StatusData.(*commands.StatusDataMainInfo)
 
 				statusData := &StatusData{
-					StatusID:                   notif.StatusID,
-					RunStatus:                  notif.RunStatus,
-					StatusReply:                notif.StatusReply,
-					TargetPosition:             mainInfo.TargetPosition,
-					CurrentPosition:            mainInfo.CurrentPosition,
-					RemainingTime:              mainInfo.RemainingTime,
-					LastMasterExecutionAddress: mainInfo.LastMasterExecutionAddress,
-					LastCommandOriginator:      mainInfo.LastCommandOriginator,
+					StatusID:    notif.StatusID,
+					RunStatus:   notif.RunStatus,
+					StatusReply: notif.StatusReply,
+				}
+
+				// May be nil if status represents an error
+				if notif.StatusData != nil {
+					mainInfo := notif.StatusData.(*commands.StatusDataMainInfo)
+
+					statusData.TargetPosition = mainInfo.TargetPosition
+					statusData.CurrentPosition = mainInfo.CurrentPosition
+					statusData.RemainingTime = mainInfo.RemainingTime
+					statusData.LastMasterExecutionAddress = mainInfo.LastMasterExecutionAddress
+					statusData.LastCommandOriginator = mainInfo.LastCommandOriginator
 				}
 
 				data[notif.NodeIndex] = *statusData
