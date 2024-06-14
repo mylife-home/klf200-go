@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"klf200/commands"
 	"klf200/transport"
-	"log"
 )
 
 type handshakeData struct {
@@ -67,10 +66,9 @@ func (handshake *handshakeData) handshakeCheckVersion() error {
 	tcfm := cfm.(*commands.GetProtocolVersionCfm)
 
 	if tcfm.MajorVersion == 3 && tcfm.MinorVersion == 14 {
-		log.Printf("Protocol version : %d.%d", tcfm.MajorVersion, tcfm.MinorVersion)
+		handshake.conn.log.Infof("Protocol version : %d.%d", tcfm.MajorVersion, tcfm.MinorVersion)
 	} else {
-		// WARNING
-		log.Printf("Protocol version : %d.%d, expected 3.14", tcfm.MajorVersion, tcfm.MinorVersion)
+		handshake.conn.log.Warnf("Protocol version : %d.%d, expected 3.14", tcfm.MajorVersion, tcfm.MinorVersion)
 	}
 
 	return nil

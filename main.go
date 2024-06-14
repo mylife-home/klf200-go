@@ -8,9 +8,62 @@ import (
 	"time"
 )
 
+type logger struct {
+	err error
+}
+
+func (l *logger) Debugf(format string, args ...interface{}) {
+	l.Debug(fmt.Sprintf(format, args...))
+}
+
+func (l *logger) Infof(format string, args ...interface{}) {
+	l.Info(fmt.Sprintf(format, args...))
+}
+
+func (l *logger) Warnf(format string, args ...interface{}) {
+	l.Warn(fmt.Sprintf(format, args...))
+}
+
+func (l *logger) Errorf(format string, args ...interface{}) {
+	l.Error(fmt.Sprintf(format, args...))
+}
+
+func (l *logger) Debug(msg string) {
+	fmt.Print("DEBUG ")
+	l.print(msg)
+}
+
+func (l *logger) Info(msg string) {
+	fmt.Print("INFO  ")
+	l.print(msg)
+}
+
+func (l *logger) Warn(msg string) {
+	fmt.Print("WARN  ")
+	l.print(msg)
+}
+
+func (l *logger) Error(msg string) {
+	fmt.Print("ERROR ")
+	l.print(msg)
+}
+
+func (l *logger) print(msg string) {
+	fmt.Print(msg)
+	if l.err != nil {
+		fmt.Print(": ")
+		fmt.Printf("%s", l.err)
+	}
+	fmt.Println("")
+}
+
+func (l *logger) WithError(err error) klf200.Logger {
+	return &logger{err}
+}
+
 func main() {
 
-	client := klf200.MakeClient(os.Getenv("KLF200_ADDRESS"), os.Getenv("KLF200_PASSWORD"))
+	client := klf200.MakeClient(os.Getenv("KLF200_ADDRESS"), os.Getenv("KLF200_PASSWORD"), &logger{})
 
 	//client.RegisterNotifications(notify)
 
@@ -25,6 +78,7 @@ func main() {
 	client.Start()
 
 	for {
+		time.Sleep(time.Second * 5)
 	}
 
 	client.Close()
@@ -144,7 +198,6 @@ func open(client *klf200.Client) {
 
 		time.Sleep(time.Second * 5)
 	}
-
 }
 
 func dumpByteSlice(b []byte) {

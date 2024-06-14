@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"klf200/commands"
 	"klf200/transport"
-	"log"
 	"reflect"
 	"sync"
 	"time"
@@ -45,6 +44,7 @@ type Notifier interface {
 type Client struct {
 	servAddr string
 	password string
+	log      Logger
 
 	status                    ConnectionStatus
 	connectionStatusCallbacks []func(ConnectionStatus)
@@ -65,12 +65,13 @@ type Client struct {
 	commands *Commands
 }
 
-func MakeClient(servAddr string, password string) *Client {
+func MakeClient(servAddr string, password string, log Logger) *Client {
 	ctx, close := context.WithCancel(context.Background())
 
 	client := &Client{
 		servAddr:                  servAddr,
 		password:                  password,
+		log:                       log,
 		ctx:                       ctx,
 		close:                     close,
 		status:                    ConnectionClosed,
@@ -185,11 +186,11 @@ func (client *Client) worker() {
 }
 
 func (client *Client) connection() {
-	log.Printf("Dial to '%s'", client.servAddr)
+	client.log.Infof("Dial to '%s'", client.servAddr)
 
-	conn, err := makeConnection(client.ctx, client.servAddr)
+	conn, err := makeConnection(client.ctx, client.servAddr, client.log)
 	if err != nil {
-		log.Printf("Could not connect to '%s': %s", client.servAddr, err)
+		client.log.WithError(err).Errorf("Could not connect to '%s'", client.servAddr)
 		return
 	}
 
@@ -198,19 +199,19 @@ func (client *Client) connection() {
 		client.conn.Close()
 		client.conn = nil
 		client.changeStatus(ConnectionClosed)
-		log.Printf("Connection closed")
+		client.log.Infof("Connection closed")
 	}()
 
 	client.changeStatus(ConnectionHandshaking)
-	log.Printf("Start handshake")
+	client.log.Debugf("Start handshake")
 
 	if err := handshake(client.ctx, client.conn, client.password); err != nil {
-		log.Printf("Handshake failed: %s", err)
+		client.log.WithError(err).Error("Handshake failed")
 		return
 	}
 
 	client.changeStatus(ConnectionOpen)
-	log.Printf("Handshake done")
+	client.log.Debugf("Handshake done")
 
 	defer func() {
 		pendingConf := client.pendingConf
@@ -228,7 +229,7 @@ func (client *Client) connection() {
 			go client.heartbeat()
 
 		case err := <-client.conn.Errors():
-			log.Printf("Error on connection: %s", err)
+			client.log.WithError(err).Error("Error on connection")
 			return
 
 		case frame := <-client.conn.Read():
@@ -242,8 +243,7 @@ func (client *Client) processFrame(frame *transport.Frame) {
 	notify := commands.GetNotify(frame.Cmd)
 	if notify != nil {
 		if err := notify.Read(frame.Data); err != nil {
-			// Error
-			log.Printf("Cannot read frame %s: %v\n", frame.Cmd, err)
+			client.log.WithError(err).Errorf("Cannot read frame %s", frame.Cmd)
 			return
 		}
 
@@ -264,8 +264,7 @@ func (client *Client) processFrame(frame *transport.Frame) {
 		return
 	}
 
-	// warn
-	log.Printf("Got unmatched frame %s", frame.Cmd)
+	client.log.Warnf("Got unmatched frame %s", frame.Cmd)
 }
 
 func (client *Client) send(conn *connection, req commands.Request) error {
@@ -356,10 +355,10 @@ func (pc *pendingConfirm) Wait() (*transport.Frame, error) {
 
 func (client *Client) heartbeat() {
 	if _, err := client.device.GetState(); err != nil {
-		log.Printf("Heartbeat error: %s", err)
+		client.log.WithError(err).Errorf("Heartbeat error")
 	}
 
-	log.Printf("Heartbeat OK")
+	client.log.Debugf("Heartbeat OK")
 }
 
 func (client *Client) Device() *Device {

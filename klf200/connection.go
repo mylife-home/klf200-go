@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"klf200/transport"
-	"log"
 	"sync"
 )
 
@@ -16,11 +15,12 @@ type connection struct {
 	exit       chan struct{}
 	decoder    transport.SlipDecoder
 	workerSync sync.WaitGroup
+	log        Logger
 }
 
 var errConnectionRemotelyClosed = errors.New("connection closed by remote side")
 
-func makeConnection(ctx context.Context, address string) (*connection, error) {
+func makeConnection(ctx context.Context, address string, log Logger) (*connection, error) {
 	sock, err := makeSocket(ctx, address)
 	if err != nil {
 		return nil, err
@@ -32,6 +32,7 @@ func makeConnection(ctx context.Context, address string) (*connection, error) {
 		read:   make(chan *transport.Frame, 10),
 		errors: make(chan error, 10),
 		exit:   make(chan struct{}, 1),
+		log:    log,
 	}
 
 	conn.workerSync.Add(1)
@@ -83,13 +84,13 @@ func (conn *connection) processRead(data []byte) {
 			return
 		}
 
-		log.Printf("Recv frame %v", frame)
+		conn.log.Debugf("Recv frame %v", frame)
 		conn.read <- frame
 	}
 }
 
 func (conn *connection) processWrite(frame *transport.Frame) {
-	log.Printf("Send frame %v", frame)
+	conn.log.Debugf("Send frame %v", frame)
 
 	buffer := transport.SlipEncode(frame.Write())
 	conn.sock.Write(buffer.Bytes())
