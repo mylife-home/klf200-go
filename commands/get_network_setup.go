@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/mylife-home/klf200-go/internal/binary"
-	"github.com/mylife-home/klf200-go/internal/transport"
+	"github.com/mylife-home/klf200-go/binary"
+	"github.com/mylife-home/klf200-go/transport"
 )
 
 type GetNetworkSetupReq struct {

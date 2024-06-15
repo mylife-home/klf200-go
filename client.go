@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mylife-home/klf200-go/internal/commands"
-	"github.com/mylife-home/klf200-go/internal/transport"
+	"github.com/mylife-home/klf200-go/commands"
+	"github.com/mylife-home/klf200-go/transport"
 )
 
 const executeTimeout = time.Second * 5

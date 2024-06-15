@@ -1,6 +1,6 @@
 package commands
 
-import "github.com/mylife-home/klf200-go/internal/transport"
+import "github.com/mylife-home/klf200-go/transport"
 
 type Command interface {
 	Code() transport.Command

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/mylife-home/klf200-go/internal/commands"
+	"github.com/mylife-home/klf200-go/commands"
 )
 
 type Device struct {

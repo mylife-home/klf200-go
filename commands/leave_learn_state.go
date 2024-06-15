@@ -3,7 +3,7 @@ package commands
 import (
 	"fmt"
 
-	"github.com/mylife-home/klf200-go/internal/transport"
+	"github.com/mylife-home/klf200-go/transport"
 )
 
 type LeaveLearnStateReq struct {

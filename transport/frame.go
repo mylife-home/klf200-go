@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/mylife-home/klf200-go/internal/binary"
+	"github.com/mylife-home/klf200-go/binary"
 )
 
 const protocolId uint8 = 0

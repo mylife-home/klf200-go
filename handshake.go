@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/mylife-home/klf200-go/internal/commands"
-	"github.com/mylife-home/klf200-go/internal/transport"
+	"github.com/mylife-home/klf200-go/commands"
+	"github.com/mylife-home/klf200-go/transport"
 )
 
 type handshakeData struct {

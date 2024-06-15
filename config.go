@@ -4,8 +4,8 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/mylife-home/klf200-go/internal/commands"
-	"github.com/mylife-home/klf200-go/internal/utils"
+	"github.com/mylife-home/klf200-go/commands"
+	"github.com/mylife-home/klf200-go/utils"
 )
 
 type Config struct {
