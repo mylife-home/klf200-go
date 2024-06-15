@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"klf200/transport"
+	"github.com/mylife-home/klf200-go/klf200/transport"
 )
 
 type Command interface {

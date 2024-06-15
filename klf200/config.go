@@ -2,9 +2,10 @@ package klf200
 
 import (
 	"context"
-	"klf200/commands"
-	"klf200/utils"
 	"reflect"
+
+	"github.com/mylife-home/klf200-go/klf200/commands"
+	"github.com/mylife-home/klf200-go/klf200/utils"
 )
 
 type Config struct {

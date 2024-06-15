@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"klf200/binary"
-	"klf200/transport"
 	"time"
+
+	"github.com/mylife-home/klf200-go/klf200/binary"
+	"github.com/mylife-home/klf200-go/klf200/transport"
 )
 
 type StatusRequestReq struct {

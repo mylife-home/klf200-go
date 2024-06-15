@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"klf200"
 	"os"
 	"time"
+
+	"github.com/mylife-home/klf200-go/klf200"
 )
 
 func main() {

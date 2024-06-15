@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"klf200/commands"
-	"klf200/transport"
 	"reflect"
 	"sync"
 	"time"
+
+	"github.com/mylife-home/klf200-go/klf200/commands"
+	"github.com/mylife-home/klf200-go/klf200/transport"
 )
 
 const executeTimeout = time.Second * 5

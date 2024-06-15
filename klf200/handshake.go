@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"klf200/commands"
-	"klf200/transport"
+
+	"github.com/mylife-home/klf200-go/klf200/commands"
+	"github.com/mylife-home/klf200-go/klf200/transport"
 )
 
 type handshakeData struct {

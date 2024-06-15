@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"klf200/commands"
-	"klf200/utils"
 	"reflect"
+
+	"github.com/mylife-home/klf200-go/klf200/commands"
+	"github.com/mylife-home/klf200-go/klf200/utils"
 )
 
 type Info struct {

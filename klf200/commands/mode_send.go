@@ -3,8 +3,9 @@ package commands
 import (
 	"bytes"
 	"fmt"
-	"klf200/binary"
-	"klf200/transport"
+
+	"github.com/mylife-home/klf200-go/klf200/binary"
+	"github.com/mylife-home/klf200-go/klf200/transport"
 )
 
 type ModeSendReq struct {

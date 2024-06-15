@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"klf200/commands"
 	"reflect"
 	"sync/atomic"
 	"time"
+
+	"github.com/mylife-home/klf200-go/klf200/commands"
 )
 
 type Commands struct {

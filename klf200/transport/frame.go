@@ -3,7 +3,8 @@ package transport
 import (
 	"bytes"
 	"fmt"
-	"klf200/binary"
+
+	"github.com/mylife-home/klf200-go/klf200/binary"
 )
 
 const protocolId uint8 = 0

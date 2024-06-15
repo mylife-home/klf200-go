@@ -2,8 +2,9 @@ package klf200
 
 import (
 	"errors"
-	"klf200/commands"
 	"time"
+
+	"github.com/mylife-home/klf200-go/klf200/commands"
 )
 
 type Device struct {

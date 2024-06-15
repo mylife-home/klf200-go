@@ -2,7 +2,8 @@ package commands
 
 import (
 	"fmt"
-	"klf200/transport"
+
+	"github.com/mylife-home/klf200-go/klf200/transport"
 )
 
 type RtcSetTimeZoneReq struct {
