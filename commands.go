@@ -200,7 +200,7 @@ func (cmds *Commands) Mode(ctx context.Context, nodeIndex int) (*Session, error)
 	return newSession(cmds.client, sessionId, ctx), nil
 }
 
-func (cmds *Commands) Status(ctx context.Context, nodeIndexes []int) (map[int]StatusData, error) {
+func (cmds *Commands) Status(ctx context.Context, nodeIndexes []int) ([]*StatusData, error) {
 	sessionId := cmds.newSessionId()
 
 	// TODO: customize parameters
@@ -231,7 +231,7 @@ func (cmds *Commands) Status(ctx context.Context, nodeIndexes []int) (map[int]St
 		return nil, errors.New("session id mismatch")
 	}
 
-	data := make(map[int]StatusData)
+	data := make([]*StatusData, 0, len(nodeIndexes))
 
 	for {
 		notif, err := cmds.selectStatusNotif(ctx, n)
@@ -246,6 +246,7 @@ func (cmds *Commands) Status(ctx context.Context, nodeIndexes []int) (map[int]St
 			if sessionId == notif.SessionID {
 
 				statusData := &StatusData{
+					NodeIndex:   notif.NodeIndex,
 					StatusID:    notif.StatusID,
 					RunStatus:   notif.RunStatus,
 					StatusReply: notif.StatusReply,
@@ -262,7 +263,7 @@ func (cmds *Commands) Status(ctx context.Context, nodeIndexes []int) (map[int]St
 					statusData.LastCommandOriginator = mainInfo.LastCommandOriginator
 				}
 
-				data[notif.NodeIndex] = *statusData
+				data = append(data, statusData)
 			}
 
 		case *commands.SessionFinishedNtf:
@@ -282,6 +283,7 @@ func (cmds *Commands) Status(ctx context.Context, nodeIndexes []int) (map[int]St
 }
 
 type StatusData struct {
+	NodeIndex                  int
 	StatusID                   commands.CommandRunOwner
 	RunStatus                  commands.CommandRunStatus
 	StatusReply                commands.CommandRunStatusReply

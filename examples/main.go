@@ -140,8 +140,8 @@ func open(client *klf200.Client) {
 			panic(err)
 		}
 
-		for node, status := range status {
-			fmt.Printf("Status for node %d = %v\n", node, status)
+		for _, status := range status {
+			fmt.Printf("Status for node %d = %v\n", status.NodeIndex, status)
 		}
 
 		time.Sleep(time.Second * 5)
