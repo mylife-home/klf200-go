@@ -146,7 +146,6 @@ type notifier struct {
 func (n *notifier) process(notif commands.Notify) {
 	if n.filter(notif) {
 		n.stream <- notif
-
 	}
 }
 
@@ -252,7 +251,7 @@ func (client *Client) processFrame(frame *transport.Frame) {
 		defer client.notifiersLock.Unlock()
 
 		for n := range client.notifiers {
-			go n.process(notify)
+			n.process(notify)
 		}
 
 		return

@@ -216,6 +216,8 @@ func (cmds *Commands) Status(ctx context.Context, nodeIndexes []int) ([]*StatusD
 		reflect.TypeOf(&commands.SessionFinishedNtf{}),
 	})
 
+	defer n.Close()
+
 	cfm, err := cmds.client.execute(req)
 	if err != nil {
 		return nil, err
@@ -276,8 +278,6 @@ func (cmds *Commands) Status(ctx context.Context, nodeIndexes []int) ([]*StatusD
 			break
 		}
 	}
-
-	n.Close()
 
 	return data, nil
 }

@@ -35,6 +35,8 @@ func (info *Info) GetAllNodesInformation(ctx context.Context) ([]*commands.GetAl
 		reflect.TypeOf(&commands.GetAllNodesInformationFinishedNtf{}),
 	})
 
+	defer n.Close()
+
 	cfm, err := info.client.execute(&commands.GetAllNodesInformationReq{})
 	if err != nil {
 		return nil, err
@@ -71,8 +73,6 @@ func (info *Info) GetAllNodesInformation(ctx context.Context) ([]*commands.GetAl
 	if len(nodes) != tcfm.TotalNumberOfNodes {
 		return nil, fmt.Errorf("nodes count mismatch (ntf=%d, cfm=%d)", len(nodes), tcfm.TotalNumberOfNodes)
 	}
-
-	n.Close()
 
 	return nodes, nil
 }

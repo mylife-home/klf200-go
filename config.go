@@ -30,6 +30,8 @@ func (config *Config) GetSystemTable(ctx context.Context) ([]commands.Systemtabl
 
 	n := config.client.RegisterNotifications([]reflect.Type{reflect.TypeOf(&commands.CsGetSystemtableDataNtf{})})
 
+	defer n.Close()
+
 	_, err := config.client.execute(&commands.CsGetSystemtableDataReq{})
 	if err != nil {
 		return nil, err
@@ -54,8 +56,6 @@ func (config *Config) GetSystemTable(ctx context.Context) ([]commands.Systemtabl
 			break
 		}
 	}
-
-	n.Close()
 
 	return objects, nil
 }
