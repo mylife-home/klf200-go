@@ -252,7 +252,7 @@ func (client *Client) processFrame(frame *transport.Frame) {
 		defer client.notifiersLock.Unlock()
 
 		for n := range client.notifiers {
-			n.process(notify)
+			go n.process(notify)
 		}
 
 		return
